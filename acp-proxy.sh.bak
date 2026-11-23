@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [ "$#" -eq 0 ]; then
+    echo "Usage: $0 COMMAND [ARG ...]" >&2
+    exit 2
+fi
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+LOG_DIR="$SCRIPT_DIR/logs"
+
+mkdir -p "$LOG_DIR" || exit 1
+
+COMMAND=
+for arg do
+    escaped=$(printf '%s' "$arg" | sed "s/'/'\\\\''/g")
+    COMMAND="$COMMAND '$escaped'"
+done
+
+exec socat -v -lf "$LOG_DIR/acp-traffic.log" \
+    STDIO \
+    EXEC:"exec $COMMAND",pipes
+
